@@ -1,7 +1,7 @@
 const {Router} = require('express');
 const {registerVoter,loginVoter,getVoter} = require('../controllers/voterController');
 const {addElection,getElections,getElection,getCandidatesOfElection,getElectionVoters,updateElection,removeElection} = require('../controllers/electionController');
-
+const {addCandidate,getCandidate,removeCandidate,voteCandidate} = require('../controllers/candidateController');
 
 
 const router = Router();
@@ -19,5 +19,10 @@ router.patch('/elections/:id',updateElection)
 router.get('/elections/:id/candidates',getCandidatesOfElection)
 router.get('/elections/:id/voters',getElectionVoters)
 
+
+router.post('/candidates',addCandidate)
+router.get('/candidates/:id',getCandidate)
+router.delete('/candidates/:id',removeCandidate)
+router.patch('/candidates/:id',voteCandidate)
 
 module.exports = router;
