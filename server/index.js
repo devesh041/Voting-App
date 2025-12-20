@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const {connect} = require('mongoose');
+const upload = require('express-fileupload');
 
 require('dotenv').config();
 
@@ -11,6 +12,7 @@ const app = express();
 app.use(express.json({extended: true}));
 app.use(express.urlencoded({extended: true}));
 app.use(cors({extended: true,origin:["http://localhost:3000",]}));
+app.use(upload());
 
 app.use('/api',Routes)
 
