@@ -1,6 +1,7 @@
 const VoterModel = require("../models/voterModel");
 const HttpError = require("../models/ErrorModel");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 // Register Voter
 // Post Request : api/voters/register
@@ -52,19 +53,59 @@ const registerVoter = async (req,res,next)=>{
     }
 }
 
+// function to generate JWT Token
+const generateToken = (payload)=>{
+    const token = jwt.sign(payload,process.env.JWT_SECRET,{expiresIn:"1d"});
+    return token;
+}
 
 // Login Voter
 // Post Request : api/voters/login
 // Unprotected 
 const loginVoter =async (req,res,next)=>{
-    res.json("Login Voter");
+    try {
+        const {email,password} = req.body;
+        
+        // Check for missing fields
+        if(!email || !password){
+            return next(new HttpError("Please fill all the fields",422));
+        }
+        const newEmail = email.toLowerCase();
+        // check if email exists in db
+        const voter = await VoterModel.findOne({email:newEmail});
+        if(!voter){
+            return next(new HttpError("Invalid Credentials",422));
+        }
+        // compare password
+        const comparePass = await bcrypt.compare(password,voter.password);
+        if(!comparePass){
+            return next(new HttpError("Invalid Credentials",422));
+        }
+
+        // generate JWT Token
+        const {_id:id,isAdmin,votedElections} = voter;
+        const token = generateToken({id,isAdmin});
+
+        res.json({token,id,votedElections,isAdmin})
+    } catch (error) {
+        return next(new HttpError("Voter Login Failed check credentials",422));
+    }
 }
 
 // Get Voter
 // Post Request : api/voters/:id
 // protected 
 const getVoter =async(req,res,next)=>{
-    res.json("Get Voter");
+    try {
+        const {id} = req.params;
+        const voter = await VoterModel.findById(id).select("-password");
+        if(!voter){
+            return next(new HttpError("Voter not found",422));
+        }
+        res.json(voter);
+    } catch (error) {
+        return next(new HttpError("Couldn't Fetch Voter",422));
+    }
 }
 
 
