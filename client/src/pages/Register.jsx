@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Register = () => {
   const [userData, setUserData] = useState({
@@ -9,6 +10,9 @@ const Register = () => {
     password2: "",
   });
 
+  const [error , setError] = useState("")
+  const navigate = useNavigate();
+
   // function to change our controlled inputs
   const changeInputHandler = (e) => {
     setUserData((prevState) => {
@@ -16,16 +20,26 @@ const Register = () => {
     });
   };
 
+  const registerVoter = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(`${process.env.REACT_APP_API_URL}/voters/register`, userData)
+      navigate("/")
+    } catch (error) {
+      setError(error.response.data.message)
+    }
+  }
+
   console.log(userData)
   return (
     <section className="register">
       <div className="container register__container">
         <h2>Sign Up</h2>
 
-        <form>
-          <p className="form__error-message">
-            Any error from the backend
-          </p>
+        <form onSubmit={registerVoter}>
+          {error &&<p className="form__error-message">
+            {error || "Any error from the backend"}
+          </p>}
 
           <input
             type="text"

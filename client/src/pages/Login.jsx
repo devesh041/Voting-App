@@ -1,5 +1,8 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useDispatch} from "react-redux"
+import { voteActions } from "./store/vote-slice";
 
 const Login = () => {
   const [userData, setUserData] = useState({
@@ -9,6 +12,10 @@ const Login = () => {
     password2: "",
   });
 
+  const [error , setError] = useState("")
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   // function to change our controlled inputs
   const changeInputHandler = (e) => {
     setUserData((prevState) => {
@@ -16,16 +23,30 @@ const Login = () => {
     });
   };
 
+  const loginVoter = async(e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/voters/login`, userData)
+      const newVoter = await response.data;
+      // save newVoter to loca storage and update in redux store
+      localStorage.setItem("currentVoter" , JSON.stringify(newVoter))
+      dispatch(voteActions.changeCurrentVoter(newVoter))
+      navigate("/results")
+    } catch (error) {
+      setError(error.response.data.message)
+    }
+  }
+
   console.log(userData)
   return (
     <section className="register">
       <div className="container register__container">
         <h2>Sign in</h2>
 
-        <form>
-          <p className="form__error-message">
-            Any error from the backend
-          </p>
+        <form onSubmit={loginVoter}>
+          {error && <p className="form__error-message">
+            {error}
+          </p>}
 
           {/* <input
             type="text"
@@ -50,6 +71,7 @@ const Login = () => {
             placeholder="Password"
             onChange={changeInputHandler}
             autoComplete="true"
+            autoFocus
           />
 
           {/* <input

@@ -1,13 +1,30 @@
-import React, { useState } from 'react';
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { Link, UNSAFE_WithComponentProps } from "react-router-dom";
 import { candidates } from '../pages/data'
 import CandidateRating from "./CandidateRating";
-const ResultElection = ({ id, thumbnail, title }) => {
+import { useSelector } from 'react-redux';
+
+
+const ResultElection = ({_id: id, thumbnail, title }) => {
     const [totalVotes, setTotalVotes] = useState(521)
-    // get candidates that belong to this election iteration
-    const electionCandidates = candidates.filter((candidate) => {
-        return candidate.election === id;
-    });
+    const token = useSelector(state => state?.vote?.currentVoter?.token)
+    const [electionCandidates , setElectionCandidates] = useState([])
+    
+    const getCandidates = async () => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/elections/${id}/candidates`,
+                {withCredentials: true, headers: { Authorization: `Bearer ${token}` } } )
+                const candidates = await response.data;
+                setElectionCandidates(candidates)  
+
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    useEffect(() => {
+        getCandidates();
+    } , [])
     return (
         <article className="result">
             <header className="result__header">
