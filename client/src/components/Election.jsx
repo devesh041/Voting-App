@@ -2,14 +2,16 @@ import React from "react";
 import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
 import { uiActions } from "../pages/store/ui-slice";
+import { voteActions } from "../pages/store/vote-slice";
 
-const Election = ({ id, title, description, thumbnail }) => {
+const Election = ({ _id: id, title, description, thumbnail }) => {
 
   const dispatch = useDispatch()
 
   //open update election modal
   const openModal = () => {
     dispatch(uiActions.openUpdateElectionModal())
+    dispatch(voteActions.changeIdOfElectionToUpdate(id))
   }
   return (
     <article className="election">
