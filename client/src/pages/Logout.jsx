@@ -10,13 +10,14 @@ const Logout = () => {
 
   useEffect(() => {
     dispatch(voteActions.changeCurrentVoter(null))
-    localStorage.removeItem("currentUser");
+    localStorage.removeItem("currentVoter");
+
     navigate('/login');
 
-  },[])
+  }, []) 
 
   return (
-    <div>Logout</div>
+    <></>
   )
 }
 

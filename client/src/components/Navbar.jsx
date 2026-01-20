@@ -7,21 +7,23 @@ import { AiOutlineClose } from "react-icons/ai";
 import { useSelector } from "react-redux";
 
 const Navbar = () => {
-    const [showNav, setShowNav] = useState(window.innerWidth<600 ? false: true)
+    const [showNav, setShowNav] = useState(window.innerWidth < 600 ? false : true);
     const [darkTheme, setDarkTheme] = useState(
         localStorage.getItem("voting-app-theme") || ""
     );
 
-    const token = useSelector((state) => state?.vote?.currentVoter?.token); 
-    //function to close nav menu on small screens when menu link is clicked
+    const token = useSelector((state) => state?.vote?.currentVoter?.token);
+
+    // Function to close nav menu on small screens when menu link is clicked
     const closeNavMenu = () => {
         if (window.innerWidth < 600) {
             setShowNav(false);
         } else {
             setShowNav(true);
         }
-    }
-    // function to change theme
+    };
+
+    // Function to change theme
     const changeThemeHandler = () => {
         if (localStorage.getItem("voting-app-theme") === "dark") {
             localStorage.setItem("voting-app-theme", "");
@@ -30,26 +32,44 @@ const Navbar = () => {
         }
 
         setDarkTheme(localStorage.getItem("voting-app-theme"));
-    }
-    useEffect(() => {
-        document.body.className =
-            localStorage.getItem("voting-app-theme");
-    }, [darkTheme]);
+    };
 
+    useEffect(() => {
+        document.body.className = localStorage.getItem("voting-app-theme");
+    }, [darkTheme]);
 
     return (
         <nav>
             <div className="container nav__container">
                 <Link to="/" className="nav__logo">
-                    EGATOR
+                    E-VOTING PLATFORM
                 </Link>
 
                 <div>
-                    {token && showNav && <menu>
-                        <NavLink to="elections" onClick={closeNavMenu}>Elections</NavLink>
-                        <NavLink to="results" onClick={closeNavMenu}>Results</NavLink>
-                        <NavLink to="logout" onClick={closeNavMenu}>Logout</NavLink>
-                    </menu>}
+                    {/* UPDATED LOGIC: Menu shows for both states, contents change */}
+                    {showNav && (
+                        <menu>
+                            {token ? (
+                                // LOGGED IN: Show App Links + Logout
+                                <>
+                                    <NavLink to="/elections" onClick={closeNavMenu}>
+                                        Elections
+                                    </NavLink>
+                                    <NavLink to="/results" onClick={closeNavMenu}>
+                                        Results
+                                    </NavLink>
+                                    <NavLink to="/logout" onClick={closeNavMenu}>
+                                        Logout
+                                    </NavLink>
+                                </>
+                            ) : (
+                                // LOGGED OUT: Show Login
+                                <NavLink to="/login" onClick={closeNavMenu}>
+                                    Login
+                                </NavLink>
+                            )}
+                        </menu>
+                    )}
 
                     <button className="theme__toggle-btn" onClick={changeThemeHandler}>
                         {darkTheme ? <IoMdSunny /> : <IoIosMoon />}
@@ -58,7 +78,6 @@ const Navbar = () => {
                     <button className="nav__toggle-btn" onClick={() => setShowNav(!showNav)}>
                         {showNav ? <AiOutlineClose /> : <HiOutlineBars3 />}
                     </button>
-
                 </div>
             </div>
         </nav>
