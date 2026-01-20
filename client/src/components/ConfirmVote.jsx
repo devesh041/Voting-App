@@ -48,7 +48,7 @@ const ConfirmVote = ({ selectedElection }) => {
         `${process.env.REACT_APP_API_URL}/candidates/${selectedVoteCandidate}`,
         { 
           // FIX 3: Send both IDs required by your backend controller
-          currentVoterId: currentVoter._id, 
+          currentVoterId: currentVoter.id, 
           selectedElection: selectedElection 
         },
         {

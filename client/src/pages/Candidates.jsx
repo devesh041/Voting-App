@@ -64,7 +64,6 @@ const Candidates = () => {
   }, []);
 
 
-
   return (
     <>
       <section className="candidates">
@@ -100,11 +99,14 @@ const Candidates = () => {
             </header>
           ))}
 
-        <div className="container candidates__container">
-          {candidates.map((candidate) => (
-            <Candidate key={candidate._id || candidate.id} {...candidate} />
-          ))}
-        </div>
+        {/* FIX ADDED HERE: Only render the candidates list if the user is allowed to vote */}
+        {canVote && (
+          <div className="container candidates__container">
+            {candidates.map((candidate) => (
+              <Candidate key={candidate._id || candidate.id} {...candidate} />
+            ))}
+          </div>
+        )}
       </section>
 
       {voteCandidateModalShowing && <ConfirmVote selectedElection={selectedElection} />}
