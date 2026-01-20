@@ -6,9 +6,18 @@ import { uiActions } from "./store/ui-slice";
 import UpdateElectionModal from "../components/UpdateElectionModal";
 import axios from "axios";
 import Loader from "../components/Loader";
+import { useNavigate } from "react-router-dom"; 
 
 
 const Elections = () => {
+   const token = useSelector(state => state?.vote?.currentVoter?.token)
+   const navigate = useNavigate();
+
+      useEffect(() => {
+        if(!token){
+          navigate('/login');
+        }
+      },[])
   const [elections, setElections] = useState([]);
   const [isloading, setIsloading] = useState(false);
   const dispatch = useDispatch()
@@ -17,7 +26,6 @@ const Elections = () => {
   const openModal = () => {
     dispatch(uiActions.openElectionModal())
   }
-   const token = useSelector(state => state?.vote?.currentVoter?.token)
    const isAdmin = useSelector(state => state?.vote?.currentVoter?.isAdmin)
   const electionModalShowing = useSelector(state => state.ui.electionModalShowing)
   const updateElectionModalShowing = useSelector(state => state.ui.updateElectionModalShowing)

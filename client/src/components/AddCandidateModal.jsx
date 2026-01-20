@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { IoMdClose } from "react-icons/io";
 import { useDispatch } from "react-redux";
 import { uiActions } from "../pages/store/ui-slice";
+import axios from "axios";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 const AddCandidateModal = () => {
     const [fullName, setFullName] = useState("");
@@ -9,11 +12,41 @@ const AddCandidateModal = () => {
     const [image, setImage] = useState("");
 
     const dispatch = useDispatch()
+    const navigate = useNavigate();
+
+    const electionId = useSelector((state) => state?.vote?.addCandidateElectionId);
+    const token = useSelector((state) => state?.vote?.currentVoter?.token);
 
     //close add candidate modal
     const closeModal = () => {
         dispatch(uiActions.closeAddCandidateModal())
     }
+
+const addCandidate = async (e) => {
+    e.preventDefault();
+    if (!image || !fullName || !motto) {
+        alert("Please fill all fields and select an image");
+        return;
+    }
+    
+    try {
+        const candidateInfo = new FormData();
+        candidateInfo.append('fullName', fullName); // Changed .set to .append
+        candidateInfo.append('motto', motto);
+        candidateInfo.append('image', image);
+        candidateInfo.append('currentElection', electionId);
+
+        await axios.post(`${process.env.REACT_APP_API_URL}/candidates`, candidateInfo, {
+            withCredentials: true,
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        closeModal();
+        navigate(0);
+    } catch (error) {
+        console.error("Error Detail:", error.response?.data || error.message);
+    }
+};
     return (
         <section className="modal">
             <div className="modal__content">
@@ -24,7 +57,7 @@ const AddCandidateModal = () => {
                     </button>
                 </header>
 
-                <form>
+                <form onSubmit={addCandidate}>
                     <div>
                         <h6>Candidate Name:</h6>
                         <input

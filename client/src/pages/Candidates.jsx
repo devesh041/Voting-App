@@ -1,12 +1,22 @@
-import React, { use, useEffect } from "react";
+import React, { use, useEffect , useState } from "react";
 import { useParams } from "react-router-dom";
 import Candidate from "../components/Candidate";
 import ConfirmVote from "../components/ConfirmVote";
 import { useSelector } from "react-redux";
 import axios from "axios";
-import { useState } from "react";
+import { useNavigate } from "react-router-dom"; 
 
 const Candidates = () => {
+    const token = useSelector((state) => state?.vote?.currentVoter?.token);
+    const navigate = useNavigate();
+
+    // Access Control
+    useEffect(() => {
+      if(!token){
+        navigate('/');
+      }
+    },[])
+
   const { id: selectedElection } = useParams();
   const [candidates, setCandidates] = useState([]);
   const [canVote, setCanVote] = useState(true);
@@ -14,23 +24,22 @@ const Candidates = () => {
   const voteCandidateModalShowing = useSelector(
     (state) => state.ui.voteCandidateModalShowing
   );
-  const token = useSelector((state) => state?.vote?.currentVoter?.token);
+
   const voterId = useSelector(
     (state) => state?.vote?.currentVoter?.id
   );
 
-  const getCandidates = async () => {
+ const getCandidates = async() => {
     try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/elections/
-          ${selectedElection}/candidates`,
-        { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
-      );
-      setCandidates(response.data);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/elections/${selectedElection}/candidates`, {
+       withCredentials: true,
+       headers: { Authorization: `Bearer ${token}` }
+      })
+        setCandidates(response.data);
     } catch (error) {
       console.log(error);
     }
-  };
+  }
 
  
   // Check if voter has already voted in this election

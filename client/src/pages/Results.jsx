@@ -2,13 +2,21 @@ import React, { useEffect, useState } from "react";
 import ResultElection from "../components/ResultElection";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 const Results = () => {
+
+  const token = useSelector(state => state?.vote?.currentVoter?.token)
+   const navigate = useNavigate();
+
+      useEffect(() => {
+        if(!token){
+          navigate('/login');
+        }
+      },[])
   const [elections, setElections] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Get the token from Redux store
-  const token = useSelector(state => state?.vote?.currentVoter?.token);
 
   const getElections = async () => {
     setIsLoading(true);

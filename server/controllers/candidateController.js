@@ -123,32 +123,45 @@ const removeCandidate = async (req,res,next)=>{
 // vote Candidate 
 // patch Request : api/candidates/:id
 // protected
-const voteCandidate = async (req,res,next)=>{
+const voteCandidate = async (req, res, next) => {
     try {
-        const {id: candidateId} = req.params;
-        const {currentVoterId , selectedElection}  = req.body; 
+        const { id: candidateId } = req.params;
+        const { currentVoterId, selectedElection } = req.body;
+
+        // 1. Find the Candidate
         const candidate = await CandidateModel.findById(candidateId);
-        const newVoteCount = candidate.voteCount + 1;
+        if (!candidate) return next(new HttpError("Candidate not found", 404));
 
-        await CandidateModel.findByIdAndUpdate(candidateId , {voteCount: newVoteCount} , {new: true})
+        // 2. Find the Voter
+        const voter = await VoterModel.findById(currentVoterId);
+        if (!voter) return next(new HttpError("Voter not found. Check if currentVoterId is sent correctly.", 404));
 
+        // 3. Find the Election
+        const election = await ElectionModel.findById(selectedElection);
+        if (!election) return next(new HttpError("Election not found. Check if selectedElection ID is correct.", 404));
+
+        // Start Transaction
         const session = await mongoose.startSession();
         session.startTransaction();
-        let voter = await VoterModel.findById(currentVoterId);
-        await voter.save({session})
 
-        let election = await ElectionModel.findById(selectedElection);
-        election.voters.push(voter);
-        voter.votedElections.push(election)
-        await election.save({session})
-        await voter.save({session})
+        // Update Candidate Vote Count
+        candidate.voteCount = (candidate.voteCount || 0) + 1;
+        await candidate.save({ session });
+
+        // Link Election and Voter
+        election.voters.push(voter._id);
+        voter.votedElections.push(election._id);
+
+        await election.save({ session });
+        await voter.save({ session });
+
         await session.commitTransaction();
+        session.endSession();
 
         res.status(200).json(voter.votedElections);
-
     } catch (error) {
-        return next( new HttpError(error));
+        return next(new HttpError(error.message || error, 500));
     }
-}
+};
 
 module.exports={addCandidate,getCandidate,removeCandidate,voteCandidate};

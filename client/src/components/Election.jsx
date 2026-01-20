@@ -3,7 +3,7 @@ import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
 import { uiActions } from "../pages/store/ui-slice";
 import { voteActions } from "../pages/store/vote-slice";
-
+import { useSelector } from "react-redux";
 const Election = ({ _id: id, title, description, thumbnail }) => {
 
   const dispatch = useDispatch()
@@ -13,6 +13,8 @@ const Election = ({ _id: id, title, description, thumbnail }) => {
     dispatch(uiActions.openUpdateElectionModal())
     dispatch(voteActions.changeIdOfElectionToUpdate(id))
   }
+
+  const isAdmin = useSelector((state) => state?.vote?.currentVoter?.isAdmin);
   return (
     <article className="election">
       <div className="election__image">
@@ -34,7 +36,7 @@ const Election = ({ _id: id, title, description, thumbnail }) => {
           <Link to={`/elections/${id}`} className="btn sm">
             View
           </Link>
-          <button className="btn sm primary" onClick={openModal}>Edit</button>
+          {isAdmin && <button className="btn sm primary" onClick={openModal}>Edit</button>}
         </div>
       </div>
     </article>

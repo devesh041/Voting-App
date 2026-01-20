@@ -5,23 +5,26 @@ import { voteActions } from "../pages/store/vote-slice";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const ConfirmVote = (selectedElection) => {
+// FIX 1: Destructure selectedElection from props
+const ConfirmVote = ({ selectedElection }) => {
   const [modalCandidate, setModalCandidate] = useState({});
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  // close confirm vote modal
+
+  // Close confirm vote modal
   const closeCandidateModal = () => {
     dispatch(uiActions.closeVoteCandidateModal());
   };
-  // get selected candidate id  from redux store
+
+  // Get data from Redux
   const selectedVoteCandidate = useSelector(
     (state) => state.vote.selectedVoteCandidate
   );
   const token = useSelector((state) => state?.vote?.currentVoter?.token);
   const currentVoter = useSelector((state) => state?.vote?.currentVoter);
 
-  // get the candidate selected to be voted for
+  // Get the candidate details to display in the modal
   const fetchCandidate = async () => {
     try {
       const response = await axios.get(
@@ -31,39 +34,52 @@ const ConfirmVote = (selectedElection) => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setModalCandidate(await response.data);
+      setModalCandidate(response.data);
     } catch (error) {
-      console.log(error);
+      console.log("Error fetching candidate:", error);
     }
   };
 
-  // confirm vote for selected candidate
+  // Confirm vote for selected candidate
   const confirmVote = async () => {
     try {
-      const response = await axios.post(
+      // FIX 2: Use PATCH to match your backend route
+      const response = await axios.patch(
         `${process.env.REACT_APP_API_URL}/candidates/${selectedVoteCandidate}`,
-        { selectedElection },
+        { 
+          // FIX 3: Send both IDs required by your backend controller
+          currentVoterId: currentVoter._id, 
+          selectedElection: selectedElection 
+        },
         {
           withCredentials: true,
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      const voteResult = await response.data;
+
+      const voteResult = response.data;
+
+      // Update the local voter state with the new votedElections array
       dispatch(
         voteActions.changeCurrentVoter({
           ...currentVoter,
           votedElections: voteResult,
         })
       );
+      
+      closeCandidateModal();
       navigate("/congrats");
     } catch (error) {
-      console.log(error); 
+      // Logic for 500 errors usually shows up here
+      console.log("Voting Error:", error.response?.data || error.message);
     }
   };
 
   useEffect(() => {
-    fetchCandidate();
-  }, []);
+    if (selectedVoteCandidate) {
+      fetchCandidate();
+    }
+  }, [selectedVoteCandidate]);
 
   return (
     <section className="modal">
@@ -71,7 +87,7 @@ const ConfirmVote = (selectedElection) => {
         <h5>Please confirm your vote</h5>
 
         <div className="confirm__vote-image">
-          <img src={modalCandidate.image} alt={modalCandidate.fullName} />
+          <img src={modalCandidate?.image} alt={modalCandidate?.fullName} />
         </div>
 
         <h2>

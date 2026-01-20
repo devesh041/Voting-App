@@ -4,12 +4,15 @@ import { IoIosMoon } from "react-icons/io";
 import { IoMdSunny } from "react-icons/io";
 import { HiOutlineBars3 } from "react-icons/hi2";
 import { AiOutlineClose } from "react-icons/ai";
+import { useSelector } from "react-redux";
 
 const Navbar = () => {
     const [showNav, setShowNav] = useState(window.innerWidth<600 ? false: true)
     const [darkTheme, setDarkTheme] = useState(
         localStorage.getItem("voting-app-theme") || ""
     );
+
+    const token = useSelector((state) => state?.vote?.currentVoter?.token); 
     //function to close nav menu on small screens when menu link is clicked
     const closeNavMenu = () => {
         if (window.innerWidth < 600) {
@@ -42,7 +45,7 @@ const Navbar = () => {
                 </Link>
 
                 <div>
-                    {showNav && <menu>
+                    {token && showNav && <menu>
                         <NavLink to="elections" onClick={closeNavMenu}>Elections</NavLink>
                         <NavLink to="results" onClick={closeNavMenu}>Results</NavLink>
                         <NavLink to="logout" onClick={closeNavMenu}>Logout</NavLink>
